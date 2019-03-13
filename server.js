@@ -19,6 +19,26 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
 
+const UserModel = require('./models/user');
+const ExerciseModel = require('./models/exercise');
+
+app.post('/api/exercise/new-user', async function (req, res) {
+  const username = req.body.username;
+
+  // Check if username already existed
+  try {
+    const user = await UserModel.findOne({ username });
+    if (user) {
+      return res.status(422).json({ error: 'username already exist' })
+    }
+
+    const createdUser = await UserModel.create({ username });
+    return res.json({ username: createdUser.username, _id: createdUser._id });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 
 // Not found middleware
 app.use((req, res, next) => {
