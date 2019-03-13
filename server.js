@@ -61,7 +61,9 @@ app.post('/api/exercise/add', async function (req, res) {
 
   try {
     const exercise = await ExerciseModel.create(payload);
-    const user = await UserModel.findOne({ _id: userId });
+    let user = await UserModel.findById(userId);
+    user.log = [...user.log, exercise];
+    await user.save();
 
     return res.json({
       username: user.username,
@@ -74,6 +76,21 @@ app.post('/api/exercise/add', async function (req, res) {
   }
 });
 
+app.get('/api/exercise/log', async function (req, res) {
+  const { userId, from, to, limit = 0 } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'userId cannot be blank' })
+  }
+
+  // get by userId
+  try {
+    const users = await UserModel.findById(userId).populate('log');
+    return res.json(users);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
 
 // Not found middleware
 app.use((req, res, next) => {
