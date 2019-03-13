@@ -39,6 +39,41 @@ app.post('/api/exercise/new-user', async function (req, res) {
   }
 });
 
+const formatDate = (date) => {
+  const dayName = [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thr', 'Fri', 'Sat' ];
+  const monthName = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Des' ];
+
+  const day = date.getDay();
+  const tanggal = date.getDate();
+  const month = date.getMonth();
+  const year = date.getFullYear();
+
+  return `${dayName[day]} ${monthName[month]} ${tanggal} ${year}`;
+};
+
+app.post('/api/exercise/add', async function (req, res) {
+  const userId = req.body.userId;
+  const description = req.body.description;
+  const duration = req.body.duration;
+  let date = new Date(req.body.date);
+
+  const payload = { user: userId, description, duration, date };
+
+  try {
+    const exercise = await ExerciseModel.create(payload);
+    const user = await UserModel.findOne({ _id: userId });
+
+    return res.json({
+      username: user.username,
+      description: exercise.description,
+      duration: exercise.duration,
+      date: formatDate(exercise.date)
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 
 // Not found middleware
 app.use((req, res, next) => {
