@@ -85,8 +85,31 @@ app.get('/api/exercise/log', async function (req, res) {
 
   // get by userId
   try {
-    const users = await UserModel.findById(userId).populate('log');
-    return res.json(users);
+    let returnJSON;
+    let exercises = [];
+
+    const users = await UserModel.findById(userId);
+
+    if (from && to) {
+      // get exercise by user
+      exercises = await ExerciseModel.find({ 
+        $and: [ 
+          { user: userId },
+          { date: { $gte: new Date(from) } },
+          { date: { $lte: new Date(to) } }
+        ]
+      }, null, { limit: parseInt(limit) });
+    } else {
+      // get exercise by user
+      exercises = await ExerciseModel.find({ user: userId }, null, { limit: parseInt(limit) });
+    }
+
+    returnJSON = {
+      _id: users._id,
+      username: users.username,
+      log: exercises
+    };
+    return res.json(returnJSON);
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
