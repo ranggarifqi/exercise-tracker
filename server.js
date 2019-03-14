@@ -29,7 +29,7 @@ app.post('/api/exercise/new-user', async function (req, res) {
   try {
     const user = await UserModel.findOne({ username });
     if (user) {
-      return res.status(422).json({ error: 'username already exist' })
+      return res.status(422).json({ error: 'username already exist', _id: user._id });
     }
 
     const createdUser = await UserModel.create({ username });
